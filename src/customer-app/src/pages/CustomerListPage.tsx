@@ -1,18 +1,27 @@
 import CustomerList from '../components/CustomerList';
-import { DELETE_CUSTOMER, useCustomerContext } from '../context/CustomerContext';
+import { useCustomerContext } from '../context/CustomerContext';
 
 export default function CustomerListPage() {
-  const {
-    state: { customers },
-    dispatch,
-  } = useCustomerContext();
+  // Read shared customer data + actions from context.
+  const { customers, loading, error, deleteCustomer } = useCustomerContext();
 
-  const handleDelete = (id: number) => {
-    dispatch({
-      type: DELETE_CUSTOMER,
-      payload: id,
-    });
+  // Forward delete actions from table row buttons to API layer.
+  const handleDelete = async (id: number) => {
+    try {
+      await deleteCustomer(id);
+    } catch {
+      return;
+    }
   };
+
+  // Basic request states for better UX.
+  if (loading) {
+    return <p>Loading customers...</p>;
+  }
+
+  if (error) {
+    return <p>{error}</p>;
+  }
 
   return (
     <section>

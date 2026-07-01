@@ -1,6 +1,7 @@
 import { NavLink, Outlet } from 'react-router-dom';
 
 export default function Layout() {
+  // NavLink provides route awareness so we can style the active page link.
   const navLinkStyle = ({ isActive }: { isActive: boolean }) => ({
     textDecoration: 'none',
     color: isActive ? '#0f172a' : '#334155',
@@ -11,6 +12,7 @@ export default function Layout() {
   });
 
   return (
+    // Shared app shell around every route.
     <div style={{ minHeight: '100vh', backgroundColor: '#f8fafc' }}>
       <header
         style={{
@@ -30,6 +32,7 @@ export default function Layout() {
           }}
         >
           <h1 style={{ margin: 0, fontSize: '1.25rem' }}>Customer Manager</h1>
+          {/* Main navigation between list and add screens. */}
           <nav style={{ display: 'flex', gap: '1rem' }} aria-label="Main navigation">
             <NavLink to="/" end style={navLinkStyle}>
               Customers
@@ -48,6 +51,7 @@ export default function Layout() {
           padding: '1.5rem 1.25rem',
         }}
       >
+        {/* Routed page content appears here. */}
         <Outlet />
       </main>
     </div>

@@ -7,11 +7,13 @@ type Props = {
 };
 
 export default function CustomerList({ customers, onDelete }: Props) {
+  // Empty state so the table isn't shown with no rows.
   if (customers.length === 0) {
     return <p>No customers found.</p>;
   }
 
   return (
+    // Semantic table markup for accessible tabular data.
     <table>
       <thead>
         <tr>
@@ -30,7 +32,9 @@ export default function CustomerList({ customers, onDelete }: Props) {
             <td>{customer.phone}</td>
             <td>{customer.city}</td>
             <td>
+              {/* Edit opens form pre-filled for this customer id. */}
               <Link to={`/edit/${customer.id}`}>Edit</Link>{' '}
+              {/* Delete delegates behavior to parent page handler. */}
               <button type="button" onClick={() => onDelete(customer.id)}>
                 Delete
               </button>

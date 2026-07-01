@@ -2,8 +2,11 @@ import { useEffect, useState } from 'react';
 import type { CustomerFormData } from '../types/customer';
 
 type Props = {
+  // For edit mode, pass existing customer values.
   initialData?: CustomerFormData;
+  // Parent decides what happens on successful submit.
   onSubmit: (data: CustomerFormData) => void | Promise<void>;
+  // Called when user clicks cancel.
   onCancel: () => void;
 };
 
@@ -28,13 +31,17 @@ const emptyErrors: Record<keyof CustomerFormData, string> = {
 };
 
 export default function CustomerForm({ initialData, onSubmit, onCancel }: Props) {
+  // Controlled form state (every input is driven by React state).
   const [formData, setFormData] = useState<CustomerFormData>(initialData ?? emptyFormData);
+  // Per-field validation messages.
   const [errors, setErrors] = useState<Record<keyof CustomerFormData, string>>(emptyErrors);
 
   useEffect(() => {
+    // If initialData changes (e.g., when editing another customer), reset form values.
     setFormData(initialData ?? emptyFormData);
   }, [initialData]);
 
+  // Switches button label between add/update modes.
   const isEditMode = Boolean(initialData);
 
   const handleFieldChange = (field: keyof CustomerFormData, value: string) => {
@@ -45,10 +52,12 @@ export default function CustomerForm({ initialData, onSubmit, onCancel }: Props)
 
     setErrors((prev) => ({
       ...prev,
+      // Clear only the error for the field the user is correcting.
       [field]: '',
     }));
   };
 
+  // Validates required fields before submit.
   const validate = () => {
     const nextErrors: Record<keyof CustomerFormData, string> = { ...emptyErrors };
 
@@ -70,17 +79,20 @@ export default function CustomerForm({ initialData, onSubmit, onCancel }: Props)
     return Object.values(nextErrors).every((error) => error === '');
   };
 
+  // Red border for invalid fields to provide visual feedback.
   const getInputStyle = (field: keyof CustomerFormData) => ({
     border: errors[field] ? '1px solid #dc2626' : '1px solid #cbd5e1',
   });
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    // Prevent full page reload from native form submit.
     event.preventDefault();
 
     if (!validate()) {
       return;
     }
 
+    // Hand validated form data back to parent page.
     onSubmit(formData);
   };
 

@@ -6,7 +6,9 @@ import EditCustomerPage from './pages/EditCustomerPage';
 
 export default function App() {
   return (
+    // Top-level route table for the app.
     <Routes>
+      {/* Layout wraps all pages so they share the same header/nav/container. */}
       <Route element={<Layout />}>
         <Route path="/" element={<CustomerListPage />} />
         <Route path="/add" element={<AddCustomerPage />} />

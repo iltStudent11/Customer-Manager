@@ -74,3 +74,48 @@ Why:
 - `src/customer-app/src/hooks/useCustomers.ts`
 - `src/customer-app/src/components/CustomerForm.tsx`
 - `src/customer-app/src/components/CustomerList.tsx`
+
+## New Developer Onboarding (Read This First)
+
+If you are new to this codebase, read files in this order:
+
+1. `src/customer-app/src/main.tsx`
+  - App entry point.
+  - Shows global wrappers (`CustomerProvider`, `BrowserRouter`).
+
+2. `src/customer-app/src/App.tsx`
+  - Route table (`/`, `/add`, `/edit/:id`).
+  - Shows how `Layout` wraps all pages.
+
+3. `src/customer-app/src/context/CustomerContext.tsx`
+  - Global customer data access for pages/components.
+  - Single place where the app exposes customer operations.
+
+4. `src/customer-app/src/hooks/useCustomerApi.ts`
+  - All server communication (`GET`, `POST`, `PUT`, `DELETE`).
+  - Loading/error handling and automatic re-fetch behavior.
+
+5. `src/customer-app/src/pages/*.tsx`
+  - Route-level behavior:
+    - `CustomerListPage`: list + delete
+    - `AddCustomerPage`: create + navigate back
+    - `EditCustomerPage`: edit + not-found handling
+
+6. `src/customer-app/src/components/CustomerList.tsx` and `src/customer-app/src/components/CustomerForm.tsx`
+  - Reusable UI building blocks used by pages.
+
+### Quick Mental Model
+
+- **Pages** handle route logic and navigation.
+- **Context** exposes shared customer state + actions to pages.
+- **useCustomerApi** performs all network requests.
+- **Components** render reusable UI and call parent-provided handlers.
+
+### Typical Feature Workflow
+
+When adding a new customer feature:
+
+1. Add/adjust API call in `useCustomerApi`.
+2. Expose or consume it through `CustomerContext`.
+3. Update the relevant page (`pages/`).
+4. Keep reusable display/input logic in `components/`.

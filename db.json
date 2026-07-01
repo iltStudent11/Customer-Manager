@@ -1,26 +1,6 @@
 {
   "customers": [
     {
-      "id": 1,
-      "name": "Maria Garcia",
-      "email": "maria.garcia@example.com",
-      "phone": "555-0101",
-      "address": "742 Evergreen Terrace",
-      "city": "Springfield",
-      "state": "IL",
-      "zip": "62704"
-    },
-    {
-      "id": 2,
-      "name": "James Chen",
-      "email": "james.chen@example.com",
-      "phone": "555-0102",
-      "address": "1600 Pennsylvania Ave",
-      "city": "Washington",
-      "state": "DC",
-      "zip": "20500"
-    },
-    {
       "id": 3,
       "name": "Aisha Patel",
       "email": "aisha.patel@example.com",
@@ -49,6 +29,16 @@
       "city": "Boston",
       "state": "MA",
       "zip": "02108"
+    },
+    {
+      "name": "Mike",
+      "email": "fsdfs@aol.com",
+      "phone": "5032941584",
+      "address": "123 south drive",
+      "city": "city",
+      "state": "state",
+      "zip": "03852",
+      "id": 6
     }
   ]
 }
