@@ -17,8 +17,19 @@ const emptyFormData: CustomerFormData = {
   zip: '',
 };
 
+const emptyErrors: Record<keyof CustomerFormData, string> = {
+  name: '',
+  email: '',
+  phone: '',
+  address: '',
+  city: '',
+  state: '',
+  zip: '',
+};
+
 export default function CustomerForm({ initialData, onSubmit, onCancel }: Props) {
   const [formData, setFormData] = useState<CustomerFormData>(initialData ?? emptyFormData);
+  const [errors, setErrors] = useState<Record<keyof CustomerFormData, string>>(emptyErrors);
 
   useEffect(() => {
     setFormData(initialData ?? emptyFormData);
@@ -31,10 +42,45 @@ export default function CustomerForm({ initialData, onSubmit, onCancel }: Props)
       ...prev,
       [field]: value,
     }));
+
+    setErrors((prev) => ({
+      ...prev,
+      [field]: '',
+    }));
   };
+
+  const validate = () => {
+    const nextErrors: Record<keyof CustomerFormData, string> = { ...emptyErrors };
+
+    if (!formData.name.trim()) {
+      nextErrors.name = 'Name is required.';
+    }
+
+    if (!formData.email.trim()) {
+      nextErrors.email = 'Email is required.';
+    } else if (!/^\S+@\S+\.\S+$/.test(formData.email)) {
+      nextErrors.email = 'Enter a valid email address.';
+    }
+
+    if (!formData.phone.trim()) {
+      nextErrors.phone = 'Phone is required.';
+    }
+
+    setErrors(nextErrors);
+    return Object.values(nextErrors).every((error) => error === '');
+  };
+
+  const getInputStyle = (field: keyof CustomerFormData) => ({
+    border: errors[field] ? '1px solid #dc2626' : '1px solid #cbd5e1',
+  });
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+
+    if (!validate()) {
+      return;
+    }
+
     onSubmit(formData);
   };
 
@@ -47,7 +93,10 @@ export default function CustomerForm({ initialData, onSubmit, onCancel }: Props)
           name="name"
           value={formData.name}
           onChange={(event) => handleFieldChange('name', event.target.value)}
+          aria-invalid={Boolean(errors.name)}
+          style={getInputStyle('name')}
         />
+        {errors.name ? <p style={{ color: '#dc2626' }}>{errors.name}</p> : null}
       </div>
 
       <div>
@@ -58,7 +107,10 @@ export default function CustomerForm({ initialData, onSubmit, onCancel }: Props)
           type="email"
           value={formData.email}
           onChange={(event) => handleFieldChange('email', event.target.value)}
+          aria-invalid={Boolean(errors.email)}
+          style={getInputStyle('email')}
         />
+        {errors.email ? <p style={{ color: '#dc2626' }}>{errors.email}</p> : null}
       </div>
 
       <div>
@@ -68,7 +120,10 @@ export default function CustomerForm({ initialData, onSubmit, onCancel }: Props)
           name="phone"
           value={formData.phone}
           onChange={(event) => handleFieldChange('phone', event.target.value)}
+          aria-invalid={Boolean(errors.phone)}
+          style={getInputStyle('phone')}
         />
+        {errors.phone ? <p style={{ color: '#dc2626' }}>{errors.phone}</p> : null}
       </div>
 
       <div>
@@ -78,6 +133,7 @@ export default function CustomerForm({ initialData, onSubmit, onCancel }: Props)
           name="address"
           value={formData.address}
           onChange={(event) => handleFieldChange('address', event.target.value)}
+          style={getInputStyle('address')}
         />
       </div>
 
@@ -88,6 +144,7 @@ export default function CustomerForm({ initialData, onSubmit, onCancel }: Props)
           name="city"
           value={formData.city}
           onChange={(event) => handleFieldChange('city', event.target.value)}
+          style={getInputStyle('city')}
         />
       </div>
 
@@ -98,6 +155,7 @@ export default function CustomerForm({ initialData, onSubmit, onCancel }: Props)
           name="state"
           value={formData.state}
           onChange={(event) => handleFieldChange('state', event.target.value)}
+          style={getInputStyle('state')}
         />
       </div>
 
@@ -108,6 +166,7 @@ export default function CustomerForm({ initialData, onSubmit, onCancel }: Props)
           name="zip"
           value={formData.zip}
           onChange={(event) => handleFieldChange('zip', event.target.value)}
+          style={getInputStyle('zip')}
         />
       </div>
 
