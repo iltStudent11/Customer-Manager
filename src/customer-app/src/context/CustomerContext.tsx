@@ -1,4 +1,4 @@
-import { createContext, useContext, useReducer, type Dispatch, type ReactNode } from 'react';
+import { createContext, useContext, useEffect, useReducer, type Dispatch, type ReactNode } from 'react';
 import type { Customer } from '../types/customer';
 
 export const ADD_CUSTOMER = 'ADD_CUSTOMER';
@@ -62,6 +62,28 @@ type CustomerProviderProps = {
 
 export function CustomerProvider({ children }: CustomerProviderProps) {
   const [state, dispatch] = useReducer(customerReducer, initialState);
+
+  useEffect(() => {
+    const loadCustomers = async () => {
+      try {
+        const response = await fetch('/api/customers');
+
+        if (!response.ok) {
+          throw new Error(`Failed to load customers: ${response.status}`);
+        }
+
+        const customers = (await response.json()) as Customer[];
+        dispatch({
+          type: SET_CUSTOMERS,
+          payload: customers,
+        });
+      } catch (error) {
+        console.error(error);
+      }
+    };
+
+    void loadCustomers();
+  }, []);
 
   return <CustomerContext.Provider value={{ state, dispatch }}>{children}</CustomerContext.Provider>;
 }
