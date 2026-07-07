@@ -11,11 +11,11 @@ export default function EditCustomerPage() {
   const { customers, loading, error, updateCustomer } = useCustomerContext();
 
   if (loading) {
-    return <p>Loading customer...</p>;
+    return <p className="status-message">Loading customer...</p>;
   }
 
   if (error) {
-    return <p>{error}</p>;
+    return <p className="status-message error">{error}</p>;
   }
 
   // Convert URL param string to a number for matching.
@@ -25,9 +25,9 @@ export default function EditCustomerPage() {
   // Guards against invalid/missing ids in the URL.
   if (!customer) {
     return (
-      <section>
-        <h1>Customer not found</h1>
-        <button type="button" onClick={() => navigate('/')}>
+      <section className="page">
+        <h1 className="page-title">Customer not found</h1>
+        <button type="button" className="btn btn-secondary" onClick={() => navigate('/')}>
           Back to Customers
         </button>
       </section>
@@ -62,8 +62,8 @@ export default function EditCustomerPage() {
   };
 
   return (
-    <section>
-      <h1>Edit Customer</h1>
+    <section className="page">
+      <h1 className="page-title">Edit Customer</h1>
       <CustomerForm initialData={initialData} onSubmit={handleSubmit} onCancel={handleCancel} />
     </section>
   );

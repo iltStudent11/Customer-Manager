@@ -79,11 +79,6 @@ export default function CustomerForm({ initialData, onSubmit, onCancel }: Props)
     return Object.values(nextErrors).every((error) => error === '');
   };
 
-  // Red border for invalid fields to provide visual feedback.
-  const getInputStyle = (field: keyof CustomerFormData) => ({
-    border: errors[field] ? '1px solid #dc2626' : '1px solid #cbd5e1',
-  });
-
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     // Prevent full page reload from native form submit.
     event.preventDefault();
@@ -97,8 +92,9 @@ export default function CustomerForm({ initialData, onSubmit, onCancel }: Props)
   };
 
   return (
-    <form onSubmit={handleSubmit}>
-      <div>
+    <form onSubmit={handleSubmit} className="customer-form">
+      <div className="form-grid">
+      <div className="form-field">
         <label htmlFor="name">Name</label>
         <input
           id="name"
@@ -106,12 +102,12 @@ export default function CustomerForm({ initialData, onSubmit, onCancel }: Props)
           value={formData.name}
           onChange={(event) => handleFieldChange('name', event.target.value)}
           aria-invalid={Boolean(errors.name)}
-          style={getInputStyle('name')}
+          className={`form-input ${errors.name ? 'invalid' : ''}`.trim()}
         />
-        {errors.name ? <p style={{ color: '#dc2626' }}>{errors.name}</p> : null}
+        {errors.name ? <p className="field-error">{errors.name}</p> : null}
       </div>
 
-      <div>
+      <div className="form-field">
         <label htmlFor="email">Email</label>
         <input
           id="email"
@@ -120,12 +116,12 @@ export default function CustomerForm({ initialData, onSubmit, onCancel }: Props)
           value={formData.email}
           onChange={(event) => handleFieldChange('email', event.target.value)}
           aria-invalid={Boolean(errors.email)}
-          style={getInputStyle('email')}
+          className={`form-input ${errors.email ? 'invalid' : ''}`.trim()}
         />
-        {errors.email ? <p style={{ color: '#dc2626' }}>{errors.email}</p> : null}
+        {errors.email ? <p className="field-error">{errors.email}</p> : null}
       </div>
 
-      <div>
+      <div className="form-field">
         <label htmlFor="phone">Phone</label>
         <input
           id="phone"
@@ -133,58 +129,59 @@ export default function CustomerForm({ initialData, onSubmit, onCancel }: Props)
           value={formData.phone}
           onChange={(event) => handleFieldChange('phone', event.target.value)}
           aria-invalid={Boolean(errors.phone)}
-          style={getInputStyle('phone')}
+          className={`form-input ${errors.phone ? 'invalid' : ''}`.trim()}
         />
-        {errors.phone ? <p style={{ color: '#dc2626' }}>{errors.phone}</p> : null}
+        {errors.phone ? <p className="field-error">{errors.phone}</p> : null}
       </div>
 
-      <div>
+      <div className="form-field">
         <label htmlFor="address">Address</label>
         <input
           id="address"
           name="address"
           value={formData.address}
           onChange={(event) => handleFieldChange('address', event.target.value)}
-          style={getInputStyle('address')}
+          className="form-input"
         />
       </div>
 
-      <div>
+      <div className="form-field">
         <label htmlFor="city">City</label>
         <input
           id="city"
           name="city"
           value={formData.city}
           onChange={(event) => handleFieldChange('city', event.target.value)}
-          style={getInputStyle('city')}
+          className="form-input"
         />
       </div>
 
-      <div>
+      <div className="form-field">
         <label htmlFor="state">State</label>
         <input
           id="state"
           name="state"
           value={formData.state}
           onChange={(event) => handleFieldChange('state', event.target.value)}
-          style={getInputStyle('state')}
+          className="form-input"
         />
       </div>
 
-      <div>
+      <div className="form-field">
         <label htmlFor="zip">ZIP</label>
         <input
           id="zip"
           name="zip"
           value={formData.zip}
           onChange={(event) => handleFieldChange('zip', event.target.value)}
-          style={getInputStyle('zip')}
+          className="form-input"
         />
       </div>
+      </div>
 
-      <div>
-        <button type="submit">{isEditMode ? 'Update Customer' : 'Add Customer'}</button>
-        <button type="button" onClick={onCancel}>
+      <div className="form-actions">
+        <button type="submit" className="btn btn-primary">{isEditMode ? 'Update Customer' : 'Add Customer'}</button>
+        <button type="button" className="btn btn-secondary" onClick={onCancel}>
           Cancel
         </button>
       </div>

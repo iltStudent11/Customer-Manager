@@ -16,16 +16,16 @@ export default function CustomerListPage() {
 
   // Basic request states for better UX.
   if (loading) {
-    return <p>Loading customers...</p>;
+    return <p className="status-message">Loading customers...</p>;
   }
 
   if (error) {
-    return <p>{error}</p>;
+    return <p className="status-message error">{error}</p>;
   }
 
   return (
-    <section>
-      <h1>Customer List</h1>
+    <section className="page">
+      <h1 className="page-title">Customer List</h1>
       <CustomerList customers={customers} onDelete={handleDelete} />
     </section>
   );

@@ -25,10 +25,10 @@ export default function AddCustomerPage() {
   };
 
   return (
-    <section>
-      <h1>Add Customer</h1>
-      {loading ? <p>Saving customer...</p> : null}
-      {error ? <p>{error}</p> : null}
+    <section className="page">
+      <h1 className="page-title">Add Customer</h1>
+      {loading ? <p className="status-message">Saving customer...</p> : null}
+      {error ? <p className="status-message error">{error}</p> : null}
       <CustomerForm onSubmit={handleSubmit} onCancel={handleCancel} />
     </section>
   );
