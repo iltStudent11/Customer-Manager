@@ -11,7 +11,9 @@ export default function AddCustomerPage() {
     try {
       await addCustomer(data);
       navigate('/');
-    } catch {}
+    } catch (error) {
+      console.error(error);
+    }
   };
 
   const handleCancel = () => {

@@ -47,7 +47,9 @@ export default function EditCustomerPage() {
         ...data,
       });
       navigate('/');
-    } catch {}
+    } catch (error) {
+      console.error(error);
+    }
   };
 
   const handleCancel = () => {

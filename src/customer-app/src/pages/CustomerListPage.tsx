@@ -7,7 +7,9 @@ export default function CustomerListPage() {
   const handleDelete = async (id: number) => {
     try {
       await deleteCustomer(id);
-    } catch {}
+    } catch (error) {
+      console.error(error);
+    }
   };
 
   if (loading) {

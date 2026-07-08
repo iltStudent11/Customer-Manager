@@ -7,7 +7,6 @@ type Props = {
 };
 
 export default function CustomerList({ customers, onDelete }: Props) {
-  // Empty state so the table isn't shown with no rows.
   if (customers.length === 0) {
     return <p className="status-message">No customers found.</p>;
   }
