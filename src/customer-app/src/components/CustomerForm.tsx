@@ -31,6 +31,11 @@ export default function CustomerForm({ initialData, onSubmit, onCancel }: Props)
   const [formData, setFormData] = useState<CustomerFormData>(initialData ?? emptyFormData);
   const [errors, setErrors] = useState<Record<keyof CustomerFormData, string>>(emptyErrors);
 
+  const formatPhoneNumber = (value: string) => {
+    const digits = value.replace(/\D/g, '');
+    return digits.length === 7 ? `${digits.slice(0, 3)}-${digits.slice(3)}` : value;
+  };
+
   useEffect(() => {
     setFormData(initialData ?? emptyFormData);
   }, [initialData]);
@@ -62,8 +67,20 @@ export default function CustomerForm({ initialData, onSubmit, onCancel }: Props)
       nextErrors.email = 'Enter a valid email address.';
     }
 
-    if (!formData.phone.trim()) {
+    const phoneDigits = formData.phone.replace(/\D/g, '');
+
+    if (!phoneDigits) {
       nextErrors.phone = 'Phone is required.';
+    } else if (phoneDigits.length !== 7) {
+      nextErrors.phone = 'Phone must be exactly 7 digits.';
+    }
+
+    if (/\d/.test(formData.city)) {
+      nextErrors.city = 'City cannot contain numbers.';
+    }
+
+    if (/\d/.test(formData.state)) {
+      nextErrors.state = 'State cannot contain numbers.';
     }
 
     setErrors(nextErrors);
@@ -77,7 +94,10 @@ export default function CustomerForm({ initialData, onSubmit, onCancel }: Props)
       return;
     }
 
-    onSubmit(formData);
+    onSubmit({
+      ...formData,
+      phone: formatPhoneNumber(formData.phone),
+    });
   };
 
   return (
@@ -141,8 +161,10 @@ export default function CustomerForm({ initialData, onSubmit, onCancel }: Props)
             name="city"
             value={formData.city}
             onChange={(event) => handleFieldChange('city', event.target.value)}
-            className="form-input"
+            aria-invalid={Boolean(errors.city)}
+            className={`form-input ${errors.city ? 'invalid' : ''}`.trim()}
           />
+          {errors.city ? <p className="field-error">{errors.city}</p> : null}
         </div>
 
         <div className="form-field">
@@ -152,8 +174,10 @@ export default function CustomerForm({ initialData, onSubmit, onCancel }: Props)
             name="state"
             value={formData.state}
             onChange={(event) => handleFieldChange('state', event.target.value)}
-            className="form-input"
+            aria-invalid={Boolean(errors.state)}
+            className={`form-input ${errors.state ? 'invalid' : ''}`.trim()}
           />
+          {errors.state ? <p className="field-error">{errors.state}</p> : null}
         </div>
 
         <div className="form-field">

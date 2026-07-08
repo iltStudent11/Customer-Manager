@@ -7,6 +7,11 @@ type Props = {
 };
 
 export default function CustomerList({ customers, onDelete }: Props) {
+  const formatPhoneNumber = (value: string) => {
+    const digits = value.replace(/\D/g, '');
+    return digits.length === 7 ? `${digits.slice(0, 3)}-${digits.slice(3)}` : value;
+  };
+
   if (customers.length === 0) {
     return <p className="status-message">No customers found.</p>;
   }
@@ -28,7 +33,7 @@ export default function CustomerList({ customers, onDelete }: Props) {
             <tr key={customer.id}>
               <td>{customer.name}</td>
               <td>{customer.email}</td>
-              <td>{customer.phone}</td>
+              <td>{formatPhoneNumber(customer.phone)}</td>
               <td>{customer.city}</td>
               <td className="actions-cell">
                 <Link to={`/edit/${customer.id}`} className="btn btn-link">
