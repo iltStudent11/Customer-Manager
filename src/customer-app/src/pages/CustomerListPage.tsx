@@ -5,6 +5,12 @@ export default function CustomerListPage() {
   const { customers, loading, error, deleteCustomer } = useCustomerContext();
 
   const handleDelete = async (id: number) => {
+    const shouldDelete = window.confirm('Are you sure you want to delete this customer?');
+
+    if (!shouldDelete) {
+      return;
+    }
+
     try {
       await deleteCustomer(id);
     } catch (error) {
