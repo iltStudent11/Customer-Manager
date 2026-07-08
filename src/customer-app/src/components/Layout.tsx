@@ -1,14 +1,33 @@
+import { useEffect, useState } from 'react';
 import { NavLink, Outlet } from 'react-router-dom';
 
 export default function Layout() {
+  const [isDarkMode, setIsDarkMode] = useState(() => {
+    if (typeof window === 'undefined') {
+      return false;
+    }
+
+    return window.localStorage.getItem('theme') === 'dark';
+  });
+
+  useEffect(() => {
+    document.documentElement.dataset.theme = isDarkMode ? 'dark' : 'light';
+    window.localStorage.setItem('theme', isDarkMode ? 'dark' : 'light');
+  }, [isDarkMode]);
+
   return (
-    // Shared app shell around every route.
     <div className="app-shell">
       <header className="app-header">
         <div className="app-header-inner">
           <h1 className="app-title">Customer Manager</h1>
-          {/* Main navigation between list and add screens. */}
           <nav className="app-nav" aria-label="Main navigation">
+            <button
+              type="button"
+              className="app-nav-toggle"
+              onClick={() => setIsDarkMode((prev) => !prev)}
+            >
+              {isDarkMode ? 'Light Mode' : 'Dark Mode'}
+            </button>
             <NavLink
               to="/"
               end
@@ -27,7 +46,6 @@ export default function Layout() {
       </header>
 
       <main className="app-main">
-        {/* Routed page content appears here. */}
         <Outlet />
       </main>
     </div>

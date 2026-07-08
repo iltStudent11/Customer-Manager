@@ -1,3 +1,39 @@
+:root {
+  --bg-page: #f8fafc;
+  --bg-surface: #ffffff;
+  --bg-muted: #f1f5f9;
+  --bg-subtle: #e2e8f0;
+  --text-primary: #0f172a;
+  --text-secondary: #334155;
+  --border-default: #e2e8f0;
+  --border-strong: #cbd5e1;
+  --focus-ring: rgba(100, 116, 139, 0.15);
+  --danger-text: #991b1b;
+  --danger-bg: #fee2e2;
+  --danger-bg-soft: #fef2f2;
+  --danger-border: #fecaca;
+  --btn-primary-bg: #0f172a;
+  --btn-primary-bg-hover: #1e293b;
+}
+
+:root[data-theme='dark'] {
+  --bg-page: #0f172a;
+  --bg-surface: #111827;
+  --bg-muted: #1f2937;
+  --bg-subtle: #334155;
+  --text-primary: #e2e8f0;
+  --text-secondary: #cbd5e1;
+  --border-default: #334155;
+  --border-strong: #475569;
+  --focus-ring: rgba(148, 163, 184, 0.22);
+  --danger-text: #fecaca;
+  --danger-bg: #7f1d1d;
+  --danger-bg-soft: #3f1d1d;
+  --danger-border: #b91c1c;
+  --btn-primary-bg: #475569;
+  --btn-primary-bg-hover: #64748b;
+}
+
 * {
   box-sizing: border-box;
 }
@@ -5,8 +41,8 @@
 body {
   margin: 0;
   font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
-  color: #0f172a;
-  background: #f8fafc;
+  color: var(--text-primary);
+  background: var(--bg-page);
 }
 
 a {
@@ -15,12 +51,12 @@ a {
 
 .app-shell {
   min-height: 100vh;
-  background-color: #f8fafc;
+  background-color: var(--bg-page);
 }
 
 .app-header {
-  border-bottom: 1px solid #e2e8f0;
-  background: #fff;
+  border-bottom: 1px solid var(--border-default);
+  background: var(--bg-surface);
   position: sticky;
   top: 0;
   z-index: 10;
@@ -55,23 +91,32 @@ a {
   gap: 0.75rem;
 }
 
+.app-nav-toggle,
 .app-nav-link {
   text-decoration: none;
-  color: #334155;
+  color: var(--text-secondary);
   font-weight: 600;
   padding: 0.45rem 0.7rem;
   border-radius: 0.5rem;
-  transition: background-color 0.15s ease, color 0.15s ease;
+  transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
 }
 
+.app-nav-toggle {
+  border: 1px solid var(--border-strong);
+  background: var(--bg-surface);
+  cursor: pointer;
+  font-size: 0.95rem;
+}
+
+.app-nav-toggle:hover,
 .app-nav-link:hover {
-  background: #f1f5f9;
-  color: #0f172a;
+  background: var(--bg-muted);
+  color: var(--text-primary);
 }
 
 .app-nav-link.active {
-  color: #0f172a;
-  background: #e2e8f0;
+  color: var(--text-primary);
+  background: var(--bg-subtle);
 }
 
 .page {
@@ -86,23 +131,23 @@ a {
 
 .status-message {
   margin: 0;
-  color: #334155;
-  background: #f1f5f9;
-  border: 1px solid #cbd5e1;
+  color: var(--text-secondary);
+  background: var(--bg-muted);
+  border: 1px solid var(--border-strong);
   border-radius: 0.5rem;
   padding: 0.75rem 0.9rem;
 }
 
 .status-message.error {
-  color: #991b1b;
-  background: #fef2f2;
-  border-color: #fecaca;
+  color: var(--danger-text);
+  background: var(--danger-bg-soft);
+  border-color: var(--danger-border);
 }
 
 .table-wrapper {
   overflow-x: auto;
-  background: #fff;
-  border: 1px solid #e2e8f0;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-default);
   border-radius: 0.75rem;
 }
 
@@ -112,14 +157,14 @@ a {
 }
 
 .customer-table thead {
-  background: #f8fafc;
+  background: var(--bg-page);
 }
 
 .customer-table th,
 .customer-table td {
   text-align: left;
   padding: 0.8rem 0.9rem;
-  border-bottom: 1px solid #e2e8f0;
+  border-bottom: 1px solid var(--border-default);
 }
 
 .customer-table tbody tr:last-child td {
@@ -132,8 +177,8 @@ a {
 }
 
 .customer-form {
-  background: #fff;
-  border: 1px solid #e2e8f0;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-default);
   border-radius: 0.75rem;
   padding: 1rem;
   display: grid;
@@ -154,12 +199,14 @@ a {
 .form-field label {
   font-size: 0.92rem;
   font-weight: 600;
-  color: #334155;
+  color: var(--text-secondary);
 }
 
 .form-input {
   width: 100%;
-  border: 1px solid #cbd5e1;
+  border: 1px solid var(--border-strong);
+  background: var(--bg-surface);
+  color: var(--text-primary);
   border-radius: 0.5rem;
   padding: 0.6rem 0.7rem;
   font-size: 0.95rem;
@@ -167,18 +214,18 @@ a {
 }
 
 .form-input:focus {
-  border-color: #64748b;
-  box-shadow: 0 0 0 3px rgba(100, 116, 139, 0.15);
+  border-color: var(--text-secondary);
+  box-shadow: 0 0 0 3px var(--focus-ring);
 }
 
 .form-input.invalid {
   border-color: #dc2626;
-  background: #fef2f2;
+  background: var(--danger-bg-soft);
 }
 
 .field-error {
   margin: 0;
-  color: #dc2626;
+  color: var(--danger-text);
   font-size: 0.85rem;
 }
 
@@ -198,40 +245,40 @@ a {
 }
 
 .btn-primary {
-  background: #0f172a;
+  background: var(--btn-primary-bg);
   color: #fff;
 }
 
 .btn-primary:hover {
-  background: #1e293b;
+  background: var(--btn-primary-bg-hover);
 }
 
 .btn-secondary {
-  background: #fff;
-  color: #334155;
-  border-color: #cbd5e1;
+  background: var(--bg-surface);
+  color: var(--text-secondary);
+  border-color: var(--border-strong);
 }
 
 .btn-secondary:hover {
-  background: #f8fafc;
+  background: var(--bg-page);
 }
 
 .btn-link {
-  background: #f1f5f9;
-  color: #0f172a;
+  background: var(--bg-muted);
+  color: var(--text-primary);
 }
 
 .btn-link:hover {
-  background: #e2e8f0;
+  background: var(--bg-subtle);
 }
 
 .btn-danger {
-  background: #fee2e2;
-  color: #991b1b;
+  background: var(--danger-bg);
+  color: var(--danger-text);
 }
 
 .btn-danger:hover {
-  background: #fecaca;
+  background: var(--danger-border);
 }
 
 @media (max-width: 720px) {
