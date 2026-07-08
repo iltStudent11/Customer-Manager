@@ -4,10 +4,8 @@ import { useCustomerContext } from '../context/CustomerContext';
 import type { CustomerFormData } from '../types/customer';
 
 export default function EditCustomerPage() {
-  // Router helpers: read URL id and navigate after actions.
   const navigate = useNavigate();
   const { id } = useParams();
-  // Shared API/state from context.
   const { customers, loading, error, updateCustomer } = useCustomerContext();
 
   if (loading) {
@@ -18,11 +16,9 @@ export default function EditCustomerPage() {
     return <p className="status-message error">{error}</p>;
   }
 
-  // Convert URL param string to a number for matching.
   const customerId = Number(id);
   const customer = customers.find((item) => item.id === customerId);
 
-  // Guards against invalid/missing ids in the URL.
   if (!customer) {
     return (
       <section className="page">
@@ -44,7 +40,6 @@ export default function EditCustomerPage() {
     zip: customer.zip,
   };
 
-  // Sends update request and goes back to list on success.
   const handleSubmit = async (data: CustomerFormData) => {
     try {
       await updateCustomer({
@@ -52,9 +47,7 @@ export default function EditCustomerPage() {
         ...data,
       });
       navigate('/');
-    } catch {
-      return;
-    }
+    } catch {}
   };
 
   const handleCancel = () => {

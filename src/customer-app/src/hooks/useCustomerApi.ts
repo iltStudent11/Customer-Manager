@@ -1,10 +1,8 @@
 import { useCallback, useEffect, useState } from 'react';
 import type { Customer, CustomerFormData } from '../types/customer';
 
-// All customer requests go through this proxied base URL.
 const CUSTOMER_API_BASE = '/api/customers';
 
-// Shape returned by the hook so consuming code has strong typing.
 type UseCustomerApiResult = {
   customers: Customer[];
   loading: boolean;
@@ -15,123 +13,110 @@ type UseCustomerApiResult = {
   deleteCustomer: (id: number) => Promise<void>;
 };
 
+const getErrorMessage = (error: unknown, fallback: string) =>
+  error instanceof Error ? error.message : fallback;
+
 export function useCustomerApi(): UseCustomerApiResult {
-  // Local hook state: server data + request status flags.
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Loads full customer list from the API.
+  const loadCustomers = useCallback(async () => {
+    const response = await fetch(CUSTOMER_API_BASE);
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch customers: ${response.status}`);
+    }
+
+    const data = (await response.json()) as Customer[];
+    setCustomers(data);
+  }, []);
+
   const fetchCustomers = useCallback(async () => {
     setLoading(true);
     setError(null);
 
     try {
-      const response = await fetch(CUSTOMER_API_BASE);
-
-      if (!response.ok) {
-        throw new Error(`Failed to fetch customers: ${response.status}`);
-      }
-
-      const data = (await response.json()) as Customer[];
-      setCustomers(data);
+      await loadCustomers();
     } catch (caughtError) {
-      const message = caughtError instanceof Error ? caughtError.message : 'Failed to fetch customers';
-      setError(message);
+      setError(getErrorMessage(caughtError, 'Failed to fetch customers'));
       throw caughtError;
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [loadCustomers]);
 
-  // Initial fetch when the hook first mounts.
   useEffect(() => {
     void fetchCustomers().catch(() => undefined);
   }, [fetchCustomers]);
 
-  // Creates a customer, then refreshes list so UI stays in sync with server.
+  const runMutation = useCallback(
+    async (
+      request: () => Promise<Response>,
+      failedActionMessage: string
+    ) => {
+      setLoading(true);
+      setError(null);
+
+      try {
+        const response = await request();
+
+        if (!response.ok) {
+          throw new Error(`${failedActionMessage}: ${response.status}`);
+        }
+
+        await loadCustomers();
+      } catch (caughtError) {
+        setError(getErrorMessage(caughtError, failedActionMessage));
+        throw caughtError;
+      } finally {
+        setLoading(false);
+      }
+    },
+    [loadCustomers]
+  );
+
   const addCustomer = useCallback(
     async (formData: CustomerFormData) => {
-      setLoading(true);
-      setError(null);
-
-      try {
-        const response = await fetch(CUSTOMER_API_BASE, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(formData),
-        });
-
-        if (!response.ok) {
-          throw new Error(`Failed to add customer: ${response.status}`);
-        }
-
-        await fetchCustomers();
-      } catch (caughtError) {
-        const message = caughtError instanceof Error ? caughtError.message : 'Failed to add customer';
-        setError(message);
-        throw caughtError;
-      } finally {
-        setLoading(false);
-      }
+      await runMutation(
+        () =>
+          fetch(CUSTOMER_API_BASE, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(formData),
+          }),
+        'Failed to add customer'
+      );
     },
-    [fetchCustomers]
+    [runMutation]
   );
 
-  // Updates a customer, then re-fetches list.
   const updateCustomer = useCallback(
     async (customer: Customer) => {
-      setLoading(true);
-      setError(null);
-
-      try {
-        const response = await fetch(`${CUSTOMER_API_BASE}/${customer.id}`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(customer),
-        });
-
-        if (!response.ok) {
-          throw new Error(`Failed to update customer: ${response.status}`);
-        }
-
-        await fetchCustomers();
-      } catch (caughtError) {
-        const message = caughtError instanceof Error ? caughtError.message : 'Failed to update customer';
-        setError(message);
-        throw caughtError;
-      } finally {
-        setLoading(false);
-      }
+      await runMutation(
+        () =>
+          fetch(`${CUSTOMER_API_BASE}/${customer.id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(customer),
+          }),
+        'Failed to update customer'
+      );
     },
-    [fetchCustomers]
+    [runMutation]
   );
 
-  // Deletes a customer, then re-fetches list.
   const deleteCustomer = useCallback(
     async (id: number) => {
-      setLoading(true);
-      setError(null);
-
-      try {
-        const response = await fetch(`${CUSTOMER_API_BASE}/${id}`, {
-          method: 'DELETE',
-        });
-
-        if (!response.ok) {
-          throw new Error(`Failed to delete customer: ${response.status}`);
-        }
-
-        await fetchCustomers();
-      } catch (caughtError) {
-        const message = caughtError instanceof Error ? caughtError.message : 'Failed to delete customer';
-        setError(message);
-        throw caughtError;
-      } finally {
-        setLoading(false);
-      }
+      await runMutation(
+        () =>
+          fetch(`${CUSTOMER_API_BASE}/${id}`, {
+            method: 'DELETE',
+          }),
+        'Failed to delete customer'
+      );
     },
-    [fetchCustomers]
+    [runMutation]
   );
 
   return {
