@@ -15,6 +15,7 @@ A React + TypeScript customer CRUD app powered by Vite, with a JSON Server backe
 - [Testing](#testing)
 - [Build and Preview](#build-and-preview)
 - [Project Structure](#project-structure)
+- [Routing at a Glance](#routing-at-a-glance)
 - [Troubleshooting](#troubleshooting)
 - [Contributing](#contributing)
 - [License](#license)
@@ -24,8 +25,10 @@ A React + TypeScript customer CRUD app powered by Vite, with a JSON Server backe
 Customer Manager supports:
 
 - Viewing customers in a paginated list
+- Changing rows per page (10, 25, 50)
 - Adding, editing, and deleting customers
 - Client-side form validation
+- Light/dark mode toggle persisted in localStorage
 - Error fallback UI with `ErrorBoundary`
 - Unit/component tests with Vitest + Testing Library
 
@@ -110,12 +113,23 @@ From the project root:
 
 ## How Data Works
 
-The app attempts to use the API first:
+The app uses a context + hook pattern:
+
+- `CustomerProvider` exposes app-wide customer state and CRUD methods
+- `useCustomerApi` owns fetch/mutation logic, loading state, and error state
+
+Request flow:
 
 - API base in app code: `/api/customers`
 - Vite proxy forwards `/api` to `http://localhost:3001`
 
 If the API is unavailable, the app automatically falls back to localStorage (`customer-manager-customers`) with seeded customers.
+
+Pagination is client-side:
+
+- `CustomerList` renders table rows from `usePagination`
+- `PaginationControls` owns pagination UI controls
+- `usePagination` handles page state, bounds, and sliced results
 
 ## Validation Rules
 
@@ -178,6 +192,14 @@ Customer-Manager/
 ```
 
 For architecture details and onboarding flow, see `ARCHITECTURE.md`.
+
+## Routing at a Glance
+
+- `/` — customer list page (`CustomerListPage`)
+- `/add` — add customer page (`AddCustomerPage`)
+- `/edit/:id` — edit customer page (`EditCustomerPage`)
+
+All routed pages render inside `Layout` and are wrapped by `ErrorBoundary` in `App.tsx`.
 
 ## Troubleshooting
 

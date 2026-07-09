@@ -1,121 +1,121 @@
 # Customer Manager Architecture
 
-## Component Tree (Planned)
+This document describes the **current implementation** in the repository.
+
+## High-Level Component Tree
 
 ```text
-App
-  BrowserRouter
-    Layout
-      Header (nav links)
-      Routes
-        ListPage
-          CustomerList
-            CustomerRow (one per customer)
-        AddPage
-          CustomerForm (mode: "add")
-        EditPage
-          CustomerForm (mode: "edit", pre-filled)
+main.tsx
+  CustomerProvider
+    BrowserRouter
+      App
+        Routes
+          Layout
+            ErrorBoundary
+              /          -> CustomerListPage
+                            CustomerList
+                              PaginationControls
+              /add       -> AddCustomerPage
+                            CustomerForm
+              /edit/:id  -> EditCustomerPage
+                            CustomerForm
 ```
 
-## Architecture Decisions
+## Core Architecture Decisions
 
-### 1) Where customer state will live
-Customer state will live in a **Context provider** (`CustomerProvider`) that wraps the app.
+### 1) Shared customer state via Context
+Customer data and CRUD operations are provided through `CustomerContext`.
 
-Why:
-- Customer data is needed across multiple routes (`/`, `/add`, `/edit/:id`).
-- It avoids prop drilling between unrelated pages.
-- It gives one shared source of truth for list, add, update, and delete behaviors.
+- Provider: `src/customer-app/src/context/CustomerContext.tsx`
+- Consumer hook: `useCustomerContext()`
 
-### 2) CRUD state management approach
-Use **`useReducer` with typed actions** for customer state and async lifecycle flags.
+Why this works well here:
+- List/add/edit pages all need access to the same data source.
+- Avoids prop drilling between route-level components.
+- Keeps the public app data API centralized.
 
-Why:
-- CRUD flows naturally map to actions (`fetch_start`, `fetch_success`, `add_success`, `update_success`, `delete_success`, `error`).
-- Strong typing prevents invalid state transitions.
-- Easier to scale than multiple scattered `useState` calls as features grow.
+### 2) Data access handled by `useCustomerApi`
+All fetch/mutation logic lives in `src/customer-app/src/hooks/useCustomerApi.ts`.
 
-### 3) Custom hooks needed
-Use two hooks with clear responsibility split:
+Responsibilities:
+- Fetch customer list
+- Add/update/delete customer records
+- Track `loading` and `error`
+- Fallback to localStorage when API is unavailable
 
-- **`useCustomerApi`**
-  - Low-level HTTP calls to JSON Server (`getCustomers`, `getCustomerById`, `createCustomer`, `updateCustomer`, `deleteCustomer`).
-  - Handles API URL details and request/response typing.
+Local fallback behavior:
+- API base: `/api/customers`
+- If fetch fails, the hook switches to local mode (`customer-manager-customers` localStorage key)
+- CRUD actions continue to work in local mode
 
-- **`useCustomers`** (context consumer)
-  - Exposes reducer state + high-level CRUD commands to components/pages.
-  - Example outputs: `customers`, `loading`, `error`, `fetchCustomers`, `addCustomer`, `updateCustomer`, `removeCustomer`.
+### 3) Route-level pages own flow, components stay reusable
+Pages orchestrate navigation and operation handlers:
 
-This separation keeps networking concerns independent from UI state orchestration.
+- `CustomerListPage`: delete flow + status UI
+- `AddCustomerPage`: create flow + redirect to `/`
+- `EditCustomerPage`: lookup by route param + update flow + not-found UI
 
-### 4) Add/edit form strategy
-Use **one reusable `CustomerForm` component** with mode-driven props.
+Reusable components:
+- `CustomerForm`: shared add/edit form and validation
+- `CustomerList`: tabular display for customer records
+- `PaginationControls`: pagination UI controls only
+- `ErrorBoundary`: catches render-time UI errors for routed content
 
-Recommended props:
-- `mode: 'add' | 'edit'`
-- `initialValues?: CustomerFormData`
-- `onSubmit: (data: CustomerFormData) => Promise<void> | void`
-- `submitting?: boolean`
+### 4) Pagination split into hook + presentational component
+Pagination behavior is decomposed into:
 
-Why:
-- Both pages share the same fields and validation rules.
-- Add/edit differences are mostly behavior (title, submit label, initial values), not structure.
-- Reduces duplicate code and keeps form UX consistent.
+- `usePagination` (`src/customer-app/src/hooks/usePagination.ts`)
+  - tracks `currentPage` and `rowsPerPage`
+  - computes `totalPages` and `paginatedItems`
+  - clamps page bounds and resets to page 1 on page-size change
+- `PaginationControls` (`src/customer-app/src/components/PaginationControls.tsx`)
+  - renders rows-per-page select
+  - renders Previous/Next buttons and page indicator
 
-## Data Flow Summary
-1. Pages call methods from `useCustomers`.
-2. `useCustomers` dispatches reducer actions and delegates HTTP to `useCustomerApi`.
-3. Reducer updates central customer state in context.
-4. All route components re-render from the same source of truth.
+This keeps pagination logic reusable and testable while keeping the UI component simple.
 
-## Near-Term File Plan
-- `src/customer-app/src/context/CustomerContext.tsx`
-- `src/customer-app/src/hooks/useCustomerApi.ts`
-- `src/customer-app/src/hooks/useCustomers.ts`
-- `src/customer-app/src/components/CustomerForm.tsx`
-- `src/customer-app/src/components/CustomerList.tsx`
+## Data Flow (Current)
 
-## New Developer Onboarding (Read This First)
+1. A page/component calls methods from `useCustomerContext()`.
+2. `CustomerContext` delegates to `useCustomerApi()`.
+3. `useCustomerApi` performs API/localStorage action and updates internal state.
+4. Updated context value re-renders subscribed pages/components.
 
-If you are new to this codebase, read files in this order:
+## Routing and Error Handling
+
+- Routes are declared in `src/customer-app/src/App.tsx`.
+- `Layout` wraps all pages.
+- Routed content is wrapped by `ErrorBoundary`, so render errors show a fallback UI with details and a retry option.
+
+## Theme Handling
+
+`Layout` manages light/dark mode with localStorage persistence:
+
+- key: `theme`
+- applies theme via `document.documentElement.dataset.theme`
+
+## Testing Strategy
+
+Current test coverage focuses on component and hook behavior:
+
+- `CustomerForm.test.tsx`
+- `CustomerList.test.tsx`
+- `CustomerList.hook-integration.test.tsx`
+- `ErrorBoundary.test.tsx`
+- `usePagination.test.ts`
+
+Tests use Vitest + Testing Library with jsdom.
+
+## New Developer Onboarding Order
+
+Read files in this order:
 
 1. `src/customer-app/src/main.tsx`
-  - App entry point.
-  - Shows global wrappers (`CustomerProvider`, `BrowserRouter`).
-
 2. `src/customer-app/src/App.tsx`
-  - Route table (`/`, `/add`, `/edit/:id`).
-  - Shows how `Layout` wraps all pages.
-
 3. `src/customer-app/src/context/CustomerContext.tsx`
-  - Global customer data access for pages/components.
-  - Single place where the app exposes customer operations.
-
 4. `src/customer-app/src/hooks/useCustomerApi.ts`
-  - All server communication (`GET`, `POST`, `PUT`, `DELETE`).
-  - Loading/error handling and automatic re-fetch behavior.
-
 5. `src/customer-app/src/pages/*.tsx`
-  - Route-level behavior:
-    - `CustomerListPage`: list + delete
-    - `AddCustomerPage`: create + navigate back
-    - `EditCustomerPage`: edit + not-found handling
-
-6. `src/customer-app/src/components/CustomerList.tsx` and `src/customer-app/src/components/CustomerForm.tsx`
-  - Reusable UI building blocks used by pages.
-
-### Quick Mental Model
-
-- **Pages** handle route logic and navigation.
-- **Context** exposes shared customer state + actions to pages.
-- **useCustomerApi** performs all network requests.
-- **Components** render reusable UI and call parent-provided handlers.
-
-### Typical Feature Workflow
-
-When adding a new customer feature:
-
-1. Add/adjust API call in `useCustomerApi`.
-2. Expose or consume it through `CustomerContext`.
-3. Update the relevant page (`pages/`).
-4. Keep reusable display/input logic in `components/`.
+6. `src/customer-app/src/components/CustomerForm.tsx`
+7. `src/customer-app/src/components/CustomerList.tsx`
+8. `src/customer-app/src/components/PaginationControls.tsx`
+9. `src/customer-app/src/hooks/usePagination.ts`
