@@ -1,16 +1,16 @@
 import { useEffect, useMemo, useState } from 'react';
 
-type UsePaginationOptions<TPageSize extends number> = {
-  itemsPerPageOptions: readonly TPageSize[];
-  initialRowsPerPage?: TPageSize;
+type UsePaginationOptions = {
+  itemsPerPageOptions: readonly number[];
+  initialRowsPerPage?: number;
 };
 
-export default function usePagination<TItem, TPageSize extends number>(
+export default function usePagination<TItem>(
   items: TItem[],
-  { itemsPerPageOptions, initialRowsPerPage }: UsePaginationOptions<TPageSize>
+  { itemsPerPageOptions, initialRowsPerPage }: UsePaginationOptions
 ) {
-  const defaultRowsPerPage = initialRowsPerPage ?? itemsPerPageOptions[0] ?? (10 as TPageSize);
-  const [rowsPerPage, setRowsPerPageState] = useState<TPageSize>(defaultRowsPerPage);
+  const defaultRowsPerPage = initialRowsPerPage ?? itemsPerPageOptions[0] ?? 10;
+  const [rowsPerPage, setRowsPerPageState] = useState(defaultRowsPerPage);
   const [currentPage, setCurrentPage] = useState(1);
 
   const totalPages = Math.max(1, Math.ceil(items.length / rowsPerPage));
@@ -26,7 +26,7 @@ export default function usePagination<TItem, TPageSize extends number>(
     return items.slice(start, start + rowsPerPage);
   }, [items, currentPage, rowsPerPage]);
 
-  const setRowsPerPage = (rows: TPageSize) => {
+  const setRowsPerPage = (rows: number) => {
     setRowsPerPageState(rows);
     setCurrentPage(1);
   };

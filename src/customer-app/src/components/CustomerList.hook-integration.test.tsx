@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
-import { describe, expect, it, vi, type Mock } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import CustomerList from './CustomerList';
 import usePagination from '../hooks/usePagination';
 import type { Customer } from '../types/customer';
@@ -10,10 +10,10 @@ vi.mock('../hooks/usePagination', () => ({
   default: vi.fn(),
 }));
 
-const mockedUsePagination = usePagination as unknown as Mock;
+const mockedUsePagination = vi.mocked(usePagination);
 
 describe('CustomerList + usePagination boundary', () => {
-  it('renders from hook output and forwards pagination control actions', async () => {
+  it('renders what the hook returns and forwards pagination interactions', async () => {
     const user = userEvent.setup();
 
     const goToPreviousPage = vi.fn();
@@ -73,6 +73,6 @@ describe('CustomerList + usePagination boundary', () => {
 
     expect(goToPreviousPage).toHaveBeenCalledTimes(1);
     expect(goToNextPage).toHaveBeenCalledTimes(1);
-    expect(setRowsPerPage).toHaveBeenCalledWith(50 as 10 | 25 | 50);
+    expect(setRowsPerPage).toHaveBeenCalledWith(50);
   });
 });

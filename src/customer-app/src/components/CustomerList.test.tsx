@@ -5,7 +5,7 @@ import { describe, expect, it, vi } from 'vitest';
 import CustomerList from './CustomerList';
 import type { Customer } from '../types/customer';
 
-const customers: Customer[] = [
+const sampleCustomers: Customer[] = [
   {
     id: 1,
     name: 'Maria Garcia',
@@ -28,7 +28,7 @@ const customers: Customer[] = [
   },
 ];
 
-const createCustomers = (count: number): Customer[] =>
+const buildCustomers = (count: number): Customer[] =>
   Array.from({ length: count }, (_, index) => {
     const number = index + 1;
 
@@ -44,7 +44,7 @@ const createCustomers = (count: number): Customer[] =>
     };
   });
 
-const renderCustomerList = (items: Customer[], onDelete = vi.fn()) => {
+const renderList = (items: Customer[], onDelete = vi.fn()) => {
   render(
     <MemoryRouter>
       <CustomerList customers={items} onDelete={onDelete} />
@@ -55,22 +55,22 @@ const renderCustomerList = (items: Customer[], onDelete = vi.fn()) => {
 };
 
 describe('CustomerList', () => {
-  it('renders all customer names', () => {
-    renderCustomerList(customers);
+  it('shows the customers passed into the table', () => {
+    renderList(sampleCustomers);
 
     expect(screen.getByText('Maria Garcia')).toBeInTheDocument();
     expect(screen.getByText('James Chen')).toBeInTheDocument();
   });
 
-  it('shows empty state when customer list is empty', () => {
-    renderCustomerList([]);
+  it('shows the empty-state message when no customers exist', () => {
+    renderList([]);
 
     expect(screen.getByText('No customers found.')).toBeInTheDocument();
   });
 
-  it('calls onDelete with the correct customer id', async () => {
+  it('calls onDelete with the selected customer id', async () => {
     const user = userEvent.setup();
-    const { onDelete } = renderCustomerList(customers, vi.fn());
+    const { onDelete } = renderList(sampleCustomers, vi.fn());
 
     const deleteButtons = screen.getAllByRole('button', { name: 'Delete' });
     await user.click(deleteButtons[0]);
@@ -79,8 +79,8 @@ describe('CustomerList', () => {
     expect(onDelete).toHaveBeenCalledWith(1);
   });
 
-  it('renders edit links with the correct route for each customer', () => {
-    renderCustomerList(customers);
+  it('builds edit links for each customer row', () => {
+    renderList(sampleCustomers);
 
     const editLinks = screen.getAllByRole('link', { name: 'Edit' });
 
@@ -89,9 +89,9 @@ describe('CustomerList', () => {
     expect(editLinks[1]).toHaveAttribute('href', '/edit/2');
   });
 
-  it('paginates customers with 10 rows per page by default', async () => {
+  it('shows 10 rows per page by default and moves to the next page', async () => {
     const user = userEvent.setup();
-    renderCustomerList(createCustomers(12));
+    renderList(buildCustomers(12));
 
     expect(screen.getByText('Page 1 of 2')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Previous' })).toBeDisabled();
@@ -107,9 +107,9 @@ describe('CustomerList', () => {
     expect(screen.getByText('Customer 11')).toBeInTheDocument();
   });
 
-  it('allows changing rows per page to 25 and 50', async () => {
+  it('updates pagination when rows per page changes', async () => {
     const user = userEvent.setup();
-    renderCustomerList(createCustomers(40));
+    renderList(buildCustomers(40));
 
     expect(screen.getByText('Page 1 of 4')).toBeInTheDocument();
 

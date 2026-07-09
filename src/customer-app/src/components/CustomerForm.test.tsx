@@ -5,7 +5,7 @@ import CustomerForm from './CustomerForm';
 import type { CustomerFormData } from '../types/customer';
 
 describe('CustomerForm', () => {
-  it('shows required validation errors when submitting an empty form', async () => {
+  it('shows required field errors when submitting a blank form', async () => {
     const user = userEvent.setup();
     const onSubmit = vi.fn();
 
@@ -19,7 +19,7 @@ describe('CustomerForm', () => {
     expect(onSubmit).not.toHaveBeenCalled();
   });
 
-  it('submits valid form data', async () => {
+  it('submits the entered customer when the form is valid', async () => {
     const user = userEvent.setup();
     const onSubmit = vi.fn();
 
@@ -47,7 +47,7 @@ describe('CustomerForm', () => {
     });
   });
 
-  it('calls onCancel when Cancel is clicked', async () => {
+  it('runs onCancel when the user clicks Cancel', async () => {
     const user = userEvent.setup();
     const onCancel = vi.fn();
 
@@ -58,8 +58,8 @@ describe('CustomerForm', () => {
     expect(onCancel).toHaveBeenCalledTimes(1);
   });
 
-  it('pre-fills form values when initialData is provided', () => {
-    const initialData: CustomerFormData = {
+  it('pre-fills all inputs when initialData is provided', () => {
+    const existingCustomer: CustomerFormData = {
       name: 'Maria Garcia',
       email: 'maria.garcia@example.com',
       phone: '555-0101',
@@ -69,7 +69,7 @@ describe('CustomerForm', () => {
       zip: '62704',
     };
 
-    render(<CustomerForm initialData={initialData} onSubmit={vi.fn()} onCancel={vi.fn()} />);
+    render(<CustomerForm initialData={existingCustomer} onSubmit={vi.fn()} onCancel={vi.fn()} />);
 
     expect(screen.getByLabelText('Name')).toHaveValue('Maria Garcia');
     expect(screen.getByLabelText('Email')).toHaveValue('maria.garcia@example.com');

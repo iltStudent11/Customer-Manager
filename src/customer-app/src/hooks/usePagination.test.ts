@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import usePagination from './usePagination';
 
 describe('usePagination', () => {
-  it('uses the first page size option by default and returns first page items', () => {
+  it('starts on page one with the default page size', () => {
     const items = Array.from({ length: 12 }, (_, index) => index + 1);
 
     const { result } = renderHook(() =>
@@ -18,7 +18,7 @@ describe('usePagination', () => {
     expect(result.current.paginatedItems).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
   });
 
-  it('moves between pages and respects previous/next boundaries', () => {
+  it('moves between pages without going past the first or last page', () => {
     const items = Array.from({ length: 12 }, (_, index) => index + 1);
 
     const { result } = renderHook(() =>
@@ -47,7 +47,7 @@ describe('usePagination', () => {
     expect(result.current.currentPage).toBe(2);
   });
 
-  it('updates rows per page and resets current page to 1', () => {
+  it('resets back to page one when page size changes', () => {
     const items = Array.from({ length: 40 }, (_, index) => index + 1);
 
     const { result } = renderHook(() =>
@@ -74,7 +74,7 @@ describe('usePagination', () => {
     );
   });
 
-  it('adjusts current page when the item list shrinks below current page range', () => {
+  it('clamps the current page when the result set gets smaller', () => {
     const initialItems = Array.from({ length: 20 }, (_, index) => index + 1);
     const smallerItems = Array.from({ length: 5 }, (_, index) => index + 1);
 

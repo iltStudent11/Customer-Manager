@@ -8,12 +8,12 @@ function ThrowingComponent(): ReactElement {
   throw new Error('Boom from test');
 }
 
-function WorkingComponent() {
+function HealthyComponent() {
   return <p>Recovered content</p>;
 }
 
 describe('ErrorBoundary', () => {
-  it('catches render errors and shows fallback UI with details', () => {
+  it('shows the fallback UI when a child throws during render', () => {
     const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => undefined);
 
     render(
@@ -29,7 +29,7 @@ describe('ErrorBoundary', () => {
     consoleErrorSpy.mockRestore();
   });
 
-  it('resets error state when Try Again is clicked', async () => {
+  it('tries to render children again after clicking Try Again', async () => {
     const user = userEvent.setup();
     const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => undefined);
 
@@ -41,7 +41,7 @@ describe('ErrorBoundary', () => {
 
     rerender(
       <ErrorBoundary>
-        <WorkingComponent />
+        <HealthyComponent />
       </ErrorBoundary>
     );
 

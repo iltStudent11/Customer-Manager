@@ -69,9 +69,7 @@ export default function CustomerList({ customers, onDelete }: Props) {
         totalPages={totalPages}
         rowsPerPage={rowsPerPage}
         pageSizeOptions={pageSizeOptions}
-        onRowsPerPageChange={(rows) => {
-          setRowsPerPage(rows as (typeof pageSizeOptions)[number]);
-        }}
+        onRowsPerPageChange={setRowsPerPage}
         onPrevious={goToPreviousPage}
         onNext={goToNextPage}
       />
