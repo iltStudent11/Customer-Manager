@@ -28,6 +28,22 @@ const customers: Customer[] = [
   },
 ];
 
+const createCustomers = (count: number): Customer[] =>
+  Array.from({ length: count }, (_, index) => {
+    const number = index + 1;
+
+    return {
+      id: number,
+      name: `Customer ${number}`,
+      email: `customer${number}@example.com`,
+      phone: `555${String(number).padStart(4, '0')}`,
+      address: `${number} Main St`,
+      city: 'Springfield',
+      state: 'IL',
+      zip: '62704',
+    };
+  });
+
 const renderCustomerList = (items: Customer[], onDelete = vi.fn()) => {
   render(
     <MemoryRouter>
@@ -71,5 +87,43 @@ describe('CustomerList', () => {
     expect(editLinks).toHaveLength(2);
     expect(editLinks[0]).toHaveAttribute('href', '/edit/1');
     expect(editLinks[1]).toHaveAttribute('href', '/edit/2');
+  });
+
+  it('paginates customers with 10 rows per page by default', async () => {
+    const user = userEvent.setup();
+    renderCustomerList(createCustomers(12));
+
+    expect(screen.getByText('Page 1 of 2')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Previous' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Next' })).toBeEnabled();
+    expect(screen.getByText('Customer 10')).toBeInTheDocument();
+    expect(screen.queryByText('Customer 11')).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Next' }));
+
+    expect(screen.getByText('Page 2 of 2')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Previous' })).toBeEnabled();
+    expect(screen.getByRole('button', { name: 'Next' })).toBeDisabled();
+    expect(screen.getByText('Customer 11')).toBeInTheDocument();
+  });
+
+  it('allows changing rows per page to 25 and 50', async () => {
+    const user = userEvent.setup();
+    renderCustomerList(createCustomers(40));
+
+    expect(screen.getByText('Page 1 of 4')).toBeInTheDocument();
+
+    await user.selectOptions(screen.getByLabelText('Rows per page'), '25');
+
+    expect(screen.getByText('Page 1 of 2')).toBeInTheDocument();
+    expect(screen.getByText('Customer 25')).toBeInTheDocument();
+    expect(screen.queryByText('Customer 26')).not.toBeInTheDocument();
+
+    await user.selectOptions(screen.getByLabelText('Rows per page'), '50');
+
+    expect(screen.getByText('Page 1 of 1')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Previous' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Next' })).toBeDisabled();
+    expect(screen.getByText('Customer 40')).toBeInTheDocument();
   });
 });
