@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
 import { describe, expect, it, vi } from 'vitest';
@@ -125,5 +125,40 @@ describe('CustomerList', () => {
     expect(screen.getByRole('button', { name: 'Previous' })).toBeDisabled();
     expect(screen.getByRole('button', { name: 'Next' })).toBeDisabled();
     expect(screen.getByText('Customer 40')).toBeInTheDocument();
+  });
+
+  it('filters customers with the global search bar', async () => {
+    const user = userEvent.setup();
+    renderList(sampleCustomers);
+
+    await user.type(screen.getByLabelText('Search'), 'washington');
+
+    expect(screen.queryByText('Maria Garcia')).not.toBeInTheDocument();
+    expect(screen.getByText('James Chen')).toBeInTheDocument();
+  });
+
+  it('sorts columns alphabetically when clicking header controls', async () => {
+    const user = userEvent.setup();
+    renderList(sampleCustomers);
+
+    const table = screen.getByRole('table');
+    const rowsBeforeSort = within(table).getAllByRole('row');
+
+    expect(within(rowsBeforeSort[1]).getByText('Maria Garcia')).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Name ↕' }));
+
+    const rowsAfterNameSortAsc = within(table).getAllByRole('row');
+    expect(within(rowsAfterNameSortAsc[1]).getByText('James Chen')).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Name ↑' }));
+
+    const rowsAfterNameSortDesc = within(table).getAllByRole('row');
+    expect(within(rowsAfterNameSortDesc[1]).getByText('Maria Garcia')).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'City ↕' }));
+
+    const rowsAfterCitySortAsc = within(table).getAllByRole('row');
+    expect(within(rowsAfterCitySortAsc[1]).getByText('Maria Garcia')).toBeInTheDocument();
   });
 });
