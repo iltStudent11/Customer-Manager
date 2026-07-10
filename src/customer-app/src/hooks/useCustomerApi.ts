@@ -90,6 +90,26 @@ const saveStoredCustomers = (customers: Customer[]) => {
   window.localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(customers));
 };
 
+let inFlightCustomerLoad: Promise<Customer[]> | null = null;
+
+const fetchCustomersFromApi = async () => {
+  if (!inFlightCustomerLoad) {
+    inFlightCustomerLoad = (async () => {
+      const response = await fetch(CUSTOMER_API_BASE);
+
+      if (!response.ok) {
+        throw new Error(`Failed to fetch customers: ${response.status}`);
+      }
+
+      return (await response.json()) as Customer[];
+    })().finally(() => {
+      inFlightCustomerLoad = null;
+    });
+  }
+
+  return inFlightCustomerLoad;
+};
+
 export function useCustomerApi(): UseCustomerApiResult {
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [loading, setLoading] = useState(false);
@@ -102,13 +122,7 @@ export function useCustomerApi(): UseCustomerApiResult {
       return;
     }
 
-    const response = await fetch(CUSTOMER_API_BASE);
-
-    if (!response.ok) {
-      throw new Error(`Failed to fetch customers: ${response.status}`);
-    }
-
-    const data = (await response.json()) as Customer[];
+    const data = await fetchCustomersFromApi();
     setCustomers(data);
   }, [useLocalStore]);
 
