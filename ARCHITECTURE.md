@@ -14,6 +14,7 @@ main.tsx
             ErrorBoundary
               /          -> CustomerListPage
                             CustomerList
+                              Search input + sortable headers
                               PaginationControls
               /add       -> AddCustomerPage
                             CustomerForm
@@ -45,8 +46,14 @@ Responsibilities:
 
 Local fallback behavior:
 - API base: `/api/customers`
+- Vite proxy forwards `/api/*` to JSON Server (`http://localhost:3001/*`)
 - If fetch fails, the hook switches to local mode (`customer-manager-customers` localStorage key)
-- CRUD actions continue to work in local mode
+- CRUD actions continue to work in local mode against localStorage
+- Local mode starts from fallback seed records if local storage is empty or invalid
+
+Concurrency behavior:
+- Initial customer fetch is deduplicated with a module-level in-flight promise
+- Multiple simultaneous fetch requests reuse the same request until it resolves
 
 ### 3) Route-level pages own flow, components stay reusable
 Pages orchestrate navigation and operation handlers:
@@ -57,9 +64,14 @@ Pages orchestrate navigation and operation handlers:
 
 Reusable components:
 - `CustomerForm`: shared add/edit form and validation
-- `CustomerList`: tabular display for customer records
+- `CustomerList`: search + sort + tabular display for customer records
 - `PaginationControls`: pagination UI controls only
 - `ErrorBoundary`: catches render-time UI errors for routed content
+
+List behavior in `CustomerList`:
+- Search is case-insensitive across name, email, phone, and city
+- Sorting toggles ascending/descending for name, email, phone, and city
+- Pagination runs after filtering and sorting
 
 ### 4) Pagination split into hook + presentational component
 Pagination behavior is decomposed into:
@@ -81,11 +93,20 @@ This keeps pagination logic reusable and testable while keeping the UI component
 3. `useCustomerApi` performs API/localStorage action and updates internal state.
 4. Updated context value re-renders subscribed pages/components.
 
+List rendering flow on `/`:
+1. Context provides `customers` to `CustomerListPage`.
+2. `CustomerList` applies search filter.
+3. `CustomerList` applies selected sort.
+4. `usePagination` slices sorted results for current page.
+5. `PaginationControls` updates page and rows-per-page state.
+
 ## Routing and Error Handling
 
 - Routes are declared in `src/customer-app/src/App.tsx`.
 - `Layout` wraps all pages.
 - Routed content is wrapped by `ErrorBoundary`, so render errors show a fallback UI with details and a retry option.
+- Router uses `BrowserRouter` with `basename={import.meta.env.BASE_URL}` in `main.tsx`.
+- Vite base path is `/customer-manager/`.
 
 ## Theme Handling
 
@@ -119,3 +140,9 @@ Read files in this order:
 7. `src/customer-app/src/components/CustomerList.tsx`
 8. `src/customer-app/src/components/PaginationControls.tsx`
 9. `src/customer-app/src/hooks/usePagination.ts`
+
+## Notable Runtime Characteristics
+
+- Root route `/` is redirected to `/customer-manager/` in dev middleware
+- API failures during initial load trigger automatic local mode instead of immediate hard failure
+- Loading and error states are exposed by context and surfaced at page level
